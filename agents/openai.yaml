@@ -1,0 +1,4 @@
+interface:
+  display_name: "Big Tech Interviewer"
+  short_description: "Run rigorous big-tech mock interviews."
+  default_prompt: "Use $big-tech-interviewer to run a rigorous big-tech mock interview for my target role."
