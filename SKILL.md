@@ -1,6 +1,6 @@
 ---
 name: big-tech-interviewer
-description: Rigorous big-tech mock interviewer and project-grilling data distillation workflow for Chinese or bilingual candidates. Use when the user wants 大厂面试官, 大厂面试, mock interview, interview grilling, 被拷打, 简历拷打, 项目拷打, 八股追问, 牛客面经, 面经爬取, 面试数据蒸馏, project-grilling corpus, behavioral interview, system design interview, coding interview, product/data/AI interview practice, interview debriefing, or help preparing for roles at companies such as ByteDance, Alibaba, Tencent, Meituan, JD, Huawei, Microsoft, Google, Meta, Amazon, Apple, or similar high-bar technology companies.
+description: Rigorous big-tech mock interviewer and project-grilling data distillation workflow for Chinese or bilingual candidates. Use when the user wants 大厂面试官, 大厂面试, mock interview, interview grilling, 被拷打, 简历拷打, 项目拷打, 八股追问, 牛客面经, 小红书面经, 面经爬取, 面试数据蒸馏, project-grilling corpus, behavioral interview, system design interview, coding interview, product/data/AI interview practice, interview debriefing, or help preparing for roles at companies such as ByteDance, Alibaba, Tencent, Meituan, JD, Huawei, Microsoft, Google, Meta, Amazon, Apple, or similar high-bar technology companies.
 ---
 
 # Big Tech Interviewer
@@ -60,17 +60,19 @@ Load references only when needed:
 - Read `references/followup-ladders.md` before running an intense live drill or resume/project grilling.
 - Read `references/rubrics.md` before scoring, debriefing, or creating a structured interview plan.
 - Read `references/role-tracks.md` when the user specifies a role, round, or company bar.
-- Read `references/data-distillation.md` before collecting interview-experience data, using `scripts/nowcoder_collect.py`, or converting raw 面经 into a project-grilling corpus.
+- Read `references/data-distillation.md` before collecting interview-experience data, using `scripts/interview_corpus.py` or `scripts/nowcoder_collect.py`, or converting raw 面经 into a project-grilling corpus.
+- Read `references/grilling-model.md` after generating or receiving `grilling_model.md`, or before promoting distilled corpus patterns into core interviewer behavior.
 
 ## Data Distillation Workflow
 
-When collecting 面经 data, use `scripts/nowcoder_collect.py` and keep the workflow legal, low-rate, and reproducible:
+When collecting 面经 data, use `scripts/interview_corpus.py` and keep the workflow legal, low-rate, and reproducible:
 
-1. Accept user-provided public seed URLs or a URL file.
+1. Accept user-provided public seed URLs, a URL file, raw text/HTML exports, or CSV.
 2. Run the crawler with robots checking, delay, local cache, and a max-page limit.
-3. Classify records by company, language, role, round, enterprise tags, and difficulty.
+3. Classify records by source, company, language, role, project terms, round, enterprise tags, and difficulty.
 4. Review `project_grilling_bank.md` manually before turning questions into reusable skill material.
-5. Distill exact experiences into patterns and interviewer moves; do not publish bulk copied source text.
+5. Review `grilling_model.md` for company/role/language clusters and super-hard interviewer moves.
+6. Distill exact experiences into patterns and interviewer moves; do not publish bulk copied source text.
 
 Prioritize super-hard project questions that combine real production constraints: high concurrency, idempotency, consistency, MQ retries, cache failure, database locking, observability, rollback, security, cost, and order/payment edge cases.
 
