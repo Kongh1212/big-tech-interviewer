@@ -119,7 +119,15 @@ SUPER_PATTERNS = [
     r"(降级|熔断|限流|容灾|多活|异地)",
 ]
 
-QUESTION_MARKERS = ("?", "？", "怎么", "如何", "为什么", "讲一下", "说一下", "介绍一下", "设计", "排查")
+QUESTION_MARKERS = ("?", "？", "怎么", "如何", "为什么", "什么", "吗", "讲一下", "说一下", "介绍一下", "场景题", "系统设计", "项目相关")
+PROJECT_CONTEXT = "项目 业务 系统 线上 生产 架构 接口 服务 链路 高并发 高性能 部署 协作 发布 故障 事故 止血 回滚 排查 热点 分片 分布式 微服务".split()
+TEXTBOOK_STARTERS = ("什么是", "说一下", "讲一下", "介绍一下", "了解", "谈谈")
+NOISE_MARKERS = (
+    "包装简历", "哈哈", "牛客上", "专栏", "前传", "http://", "https://", "未填写", "招聘", "加班",
+    "base", "道心破碎", "人生开挂", "非常开心", "凌晨改", "小bug", "慢慢能", "以下是具体",
+    "项目链接", "网盘", "面试官自己提取", "盆友", "单身：", "看完",
+)
+TEXTBOOK_PATTERNS = (r"是什么", r"有哪些", r"原理", r"区别", r"优缺点", r"适用场景")
 
 DRILL_TEMPLATES = {
     "high_concurrency": "如果峰值流量突然扩大 10 倍，你这个项目最先崩在哪里？怎么压测、限流、扩容、回退？",
@@ -270,9 +278,26 @@ def split_questions(text: str) -> list[str]:
     found = []
     for chunk in re.split(r"[。；;\n]", text):
         q = re.sub(r"\s+", " ", chunk.strip(" -\t\n"))
-        if 6 <= len(q) <= 260 and any(m in q for m in QUESTION_MARKERS):
+        if 6 <= len(q) <= 260 and looks_like_question(q) and not is_noise(q):
             found.append(q)
     return list(dict.fromkeys(found))
+
+
+def looks_like_question(q: str) -> bool:
+    if any(m in q for m in QUESTION_MARKERS):
+        return True
+    if re.search(r"(设计一个|如何设计|怎么设计|怎么排查|如何排查|如果.*怎么|场景[:：])", q):
+        return True
+    return False
+
+
+def is_noise(q: str) -> bool:
+    return any(mark.lower() in q.lower() for mark in NOISE_MARKERS)
+
+
+def is_textbook_question(q: str) -> bool:
+    strong_project = any(w in q for w in ["项目", "系统", "线上", "生产故障", "场景题", "高并发", "业务链路", "服务发布"])
+    return not strong_project and any(re.search(p, q) for p in TEXTBOOK_PATTERNS)
 
 
 def extract_projects(blob: str, hint: str = "") -> list[str]:
@@ -281,26 +306,37 @@ def extract_projects(blob: str, hint: str = "") -> list[str]:
         found += [m.strip() for m in re.findall(pattern, blob)]
     if hint:
         found = [hint] + found
-    return list(dict.fromkeys(found))[:5]
+    clean = []
+    for item in found:
+        if any(mark in item for mark in QUESTION_MARKERS) or any(bad in item for bad in ["面试官", "包装简历", "看看吗"]):
+            continue
+        clean.append(item)
+    return list(dict.fromkeys(clean))[:5]
 
 
 def is_project_question(q: str) -> bool:
     low = q.lower()
-    words = "项目 业务 系统 场景 线上 生产 架构 接口 服务 链路".split()
-    return any(w in low for w in words) or any(w in low for ws in ENTERPRISE.values() for w in ws.split())
+    has_context = any(w in low for w in PROJECT_CONTEXT)
+    has_enterprise = any(w in low for ws in ENTERPRISE.values() for w in ws.split())
+    has_failure = any(w in low for w in "如果 超时 失败 丢失 重复 乱序 不一致 崩溃 宕机 堆积 击穿 雪崩 死锁 慢查询 限流 降级 熔断 补偿 对账".split())
+    is_textbook = q.startswith(TEXTBOOK_STARTERS) and not has_failure and "项目" not in q and "系统" not in q
+    if is_noise(q) or is_textbook_question(q):
+        return False
+    return looks_like_question(q) and ((has_context and not is_textbook) or (has_enterprise and has_failure))
 
 
 def classify(title: str, text: str, qs: list[str], pqs: list[str], hints: dict[str, str]) -> Classification:
     blob = f"{title}\n{text}"
+    title_blob = title
     low = blob.lower()
     tags = [tag for tag, words in ENTERPRISE.items() if any(w.lower() in low for w in words.split())]
     score = sum(len(re.findall(p, "\n".join(pqs) or blob, flags=re.I)) for p in SUPER_PATTERNS) + min(len(tags), 6)
     if any("项目" in q and ("如果" in q or "线上" in q or "故障" in q) for q in pqs):
         score += 3
     return Classification(
-        companies=merge_hint(hints.get("company", ""), match_aliases(blob, ALIASES["companies"])),
-        languages=merge_hint(hints.get("language", ""), match_aliases(blob, ALIASES["languages"])),
-        roles=merge_hint(hints.get("role", ""), match_aliases(blob, ALIASES["roles"])),
+        companies=merge_hint(hints.get("company", ""), match_aliases(title_blob, ALIASES["companies"]) or match_aliases(blob[:1200], ALIASES["companies"])),
+        languages=merge_hint(hints.get("language", ""), match_aliases(title_blob, ALIASES["languages"]) or match_aliases(blob[:1200], ALIASES["languages"])),
+        roles=merge_hint(hints.get("role", ""), match_aliases(title_blob, ALIASES["roles"]) or match_aliases(blob[:1200], ALIASES["roles"])),
         rounds=[k for k, p in ROUND_PATTERNS.items() if re.search(p, blob, flags=re.I)],
         projects=extract_projects(blob, hints.get("project", "")),
         enterprise_tags=tags,
