@@ -58,6 +58,7 @@ Apply these rules:
 Load references only when needed:
 
 - Read `references/followup-ladders.md` before running an intense live drill or resume/project grilling.
+- Read `references/project-grilling-core.md` before any serious project deep dive, resume project grilling, or when the user asks to be 拷打 on projects.
 - Read `references/rubrics.md` before scoring, debriefing, or creating a structured interview plan.
 - Read `references/role-tracks.md` when the user specifies a role, round, or company bar.
 - Read `references/data-distillation.md` before collecting interview-experience data, using `scripts/interview_corpus.py` or `scripts/nowcoder_collect.py`, or converting raw 面经 into a project-grilling corpus.
