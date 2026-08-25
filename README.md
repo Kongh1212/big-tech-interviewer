@@ -1,110 +1,203 @@
 # Big Tech Interviewer
 
-一个面向中文/双语候选人的大厂面试官 Codex Skill。它的目标不是生成温和的普通面试题，而是模拟高标准面试官对项目、简历、系统设计、工程取舍和线上故障的持续追问。
+一个专门用来“拷打项目”的大厂面试官 Codex Skill。
 
-核心方向：项目拷打、企业级场景、真实面经蒸馏。
+它不是普通题库，也不是温柔陪聊。它会像真正的大厂面试官一样，围着你的项目一直追：你到底做了什么、为什么这么设计、线上出事怎么办、指标怎么证明、是不是只是包装。
 
-## What It Does
+## 为什么做这个
 
-- 进行高压但不羞辱的模拟面试
-- 深挖简历和项目，区分真实负责与包装表达
-- 按公司、岗位、语言、轮次和企业场景生成追问
-- 从公开面经或用户提供材料中蒸馏项目拷打模型
-- 将普通八股、题库合集和真实面经分层，避免错误训练
+很多 AI 面试工具会问：
 
-## Skill Modes
+> 介绍一下你的项目？
 
-- `Interview Drill`: 一问一答式模拟面试
-- `Resume/Project Grilling`: 简历和项目深挖
-- `System/Coding/Product/Data Round`: 专项轮次
-- `Debrief`: 回答复盘、评分和训练建议
-- `Question Design`: 生成面试官问题集
-- `Data Distillation`: 抓取/导入公开面经并蒸馏拷打模式
+然后就结束了。
 
-## Install
+但真实的大厂面试更像这样：
 
-Clone this repository into your Codex skills directory:
+> 你说这个系统支持高并发。高到多少？QPS 怎么测的？  
+> Redis 挂了怎么办？MQ 重复消费怎么办？DB 慢查询怎么定位？  
+> 这个方案是你设计的，还是团队本来就有？你个人做了哪个关键决策？  
+> 如果流量涨 10 倍，最先崩在哪里？
+
+这就是 Big Tech Interviewer 要解决的问题：把“表面项目介绍”压到“企业级工程细节”。
+
+## 和普通面试 Skill 有什么不一样
+
+### 1. 重点不是背题，是项目深挖
+
+普通面试工具常见输出：
+
+- Java 基础
+- Redis 八股
+- MySQL 索引
+- 操作系统
+- 算法题
+
+这些当然重要，但它们不够。
+
+这个 Skill 更关心：
+
+- 你项目的真实业务价值是什么？
+- 你亲手负责了哪一部分？
+- 线上故障来了怎么发现、止血、恢复、复盘？
+- 方案的成本、边界和失败条件是什么？
+- 面试官继续追三层以后，你还能不能讲清楚？
+
+### 2. 基于真实面经蒸馏，不是凭空编问题
+
+项目内置了一个面经蒸馏管线，可以从公开面经或用户提供材料中提取：
+
+- 公司：字节、阿里、腾讯、美团、华为、快手、百度、京东等
+- 岗位：后端、算法、前端、数据、测试、安全、客户端、产品
+- 语言：Java、C++、Python、Go、JavaScript/TypeScript 等
+- 轮次：一面、二面、三面、HR、交叉面
+- 企业级标签：高并发、缓存、MQ、数据库、一致性、幂等、发布回滚、监控排障、成本、安全、订单支付
+
+更重要的是，它会区分：
+
+- `interview_experience`: 真实面经，作为主要证据
+- `question_compilation`: 八股/题库/合集，只做参考
+- `low_signal`: 信息不足，不轻易用于蒸馏
+
+这样可以避免把“题库文章”误当成“真实面试官风格”。
+
+### 3. 它会把问题升级成压力链路
+
+不是简单问一个问题，而是按链路追：
+
+```text
+项目说法 -> 机制 -> 边界条件 -> 线上故障 -> 指标 -> 恢复 -> 取舍 -> 个人负责
+```
+
+例如你说“我做了秒杀系统”，它不会只问 Redis 和 MQ，而会继续追：
+
+- 库存扣减在哪里做？
+- 重复请求怎么防？
+- MQ 消费失败怎么补偿？
+- 支付成功但订单失败怎么办？
+- 超卖怎么发现？
+- 线上出事谁来止血？
+- 你个人写了哪个关键模块？
+
+## 适合谁
+
+- 准备大厂后端、前端、算法、数据、测试、安全、客户端面试的人
+- 简历里有项目，但怕被面试官深挖的人
+- 想训练“讲清楚真实工程经历”的人
+- 想基于牛客、小红书等面经继续蒸馏面试模式的人
+- 想让 Codex 变成一个高标准模拟面试官的人
+
+## 怎么使用
+
+把仓库放到 Codex skills 目录：
 
 ```bash
 git clone https://github.com/Kongh1212/big-tech-interviewer.git ~/.codex/skills/big-tech-interviewer
 ```
 
-Restart Codex or reload skills, then trigger it with requests such as:
+然后重启或刷新 Codex skills。
+
+可以这样触发：
 
 ```text
 用大厂面试官拷打我的项目
-帮我做一轮字节 Java 后端项目深挖
-根据这些牛客面经蒸馏项目拷打模型
 ```
 
-## Corpus Distillation
+```text
+帮我做一轮字节 Java 后端项目深挖，强度 8/10
+```
 
-The corpus pipeline lives in `scripts/interview_corpus.py`.
+```text
+根据这些牛客面经，继续蒸馏项目拷打模型
+```
 
-It supports:
+```text
+我把简历贴给你，你按阿里二面强度追问
+```
 
-- public Nowcoder URLs
-- public Xiaohongshu URLs when accessible without login and allowed by robots
-- manually exported Xiaohongshu/raw text files
-- CSV files with columns such as `source,title,url,text,company,language,role,project`
+## 面试时会怎么问
 
-Example:
+它会一问一答，不会一次扔一百道题。
+
+示例：
+
+```text
+面试官：
+你说你的项目用了 Redis 做缓存。假设 Redis 里某个热点 key 突然被打爆，DB 的 P99 开始飙升，你怎么发现、止血、恢复？
+```
+
+你回答后，它会判断回答质量：
+
+```text
+判断：vague
+追问：
+你刚才说“加限流和降级”，太泛了。限流加在哪里？按用户、接口、商户还是 key？阈值怎么来？误杀正常用户怎么办？
+```
+
+## 面经蒸馏管线
+
+脚本在：
+
+```text
+scripts/interview_corpus.py
+```
+
+支持输入：
+
+- 公开牛客 URL
+- 可公开访问且 robots 允许的小红书 URL
+- 手动导出的 `.txt/.md/.html`
+- CSV：`source,title,url,text,company,language,role,project`
+
+示例：
 
 ```bash
 python scripts/interview_corpus.py \
   --source nowcoder \
   --url-file data/nowcoder_urls.txt \
   --out-dir data/interview-corpus \
-  --max-pages 50 \
+  --max-pages 100 \
   --delay 3
 ```
 
-For Xiaohongshu or mixed sources, prefer manual exports:
+输出：
 
-```bash
-python scripts/interview_corpus.py \
-  --source xiaohongshu \
-  --raw-dir data/raw-xhs \
-  --out-dir data/interview-corpus
-```
+- `records.jsonl`: 分类后的记录
+- `summary.csv`: 公司、岗位、语言、难度、质量分层
+- `project_grilling_bank.md`: 项目追问库
+- `grilling_model.md`: 蒸馏后的拷打模型
 
-## Outputs
+## 当前蒸馏方向
 
-The pipeline writes:
+目前重点沉淀这些高压问题：
 
-- `records.jsonl`: classified records with excerpts, questions, project questions, and source URLs
-- `summary.csv`: sortable table for source, source quality, company, role, language, tags, difficulty, and URL
-- `project_grilling_bank.md`: project-question bank based mainly on real interview-experience evidence
-- `grilling_model.md`: distilled company/role/language clusters and super-hard interviewer moves
+- 高并发下哪里先崩
+- Redis/MQ/DB 同时参与时谁是事实源
+- 重试风暴下如何保证幂等
+- 订单/支付/库存/优惠券状态不一致怎么办
+- 灰度发布后技术指标正常但业务指标异常怎么办
+- AI/数据项目里数据延迟、重复、漂移、泄漏怎么办
+- 前端/客户端如何追踪用户行为到后端状态
+- 候选人到底亲自负责了什么
 
-## Source Quality
+## 数据与合规
 
-The pipeline separates corpus quality:
+这个项目只处理公开页面或用户提供材料。
 
-- `interview_experience`: concrete interview experience, suitable as primary evidence
-- `question_compilation`: 八股、题库、合集、攻略, useful only as background reference
-- `low_signal`: weak or unclear evidence
+不会做：
 
-Only real interview-experience patterns should be promoted into the core interviewer behavior unless multiple sources confirm the same pattern.
+- 登录绕过
+- 验证码绕过
+- 私信/私域内容抓取
+- 付费墙绕过
+- 大段原文发布
 
-## Ethical Collection Rules
+蒸馏目标是提炼“面试官追问模式”，不是搬运面经正文。
 
-- Collect only public pages or user-provided exports
-- Respect robots.txt, low request rates, and platform access controls
-- Do not automate login, CAPTCHA solving, paywall bypassing, or private-message access
-- Keep source URLs for attribution
-- Distill patterns and interviewer moves instead of publishing bulk copied source text
+## 项目目标
 
-## Current Focus
+把 Codex 从“会问普通题的 AI”训练成：
 
-The first corpus passes emphasize:
+> 一个懂真实大厂面试压力、会持续追问项目细节、能识别包装和虚假所有权的面试官。
 
-- ByteDance / Alibaba / Meituan / Tencent backend interviews
-- Java, C++, Python, and Go
-- high concurrency, MQ, cache, database, idempotency, consistency, release rollback, observability, cost, security, and order/payment failure cases
-
-The long-term target is a reusable project-grilling model that can press any resume project from:
-
-```text
-claim -> mechanism -> edge case -> production failure -> metrics -> recovery -> trade-off -> ownership
-```
+最终希望它能让候选人在真正面试前，先在这里被认真拷打一遍。
