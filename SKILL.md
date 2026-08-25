@@ -1,6 +1,6 @@
 ---
 name: big-tech-interviewer
-description: Rigorous big-tech mock interviewer and project-grilling data distillation workflow for Chinese or bilingual candidates. Use when the user wants 大厂面试官, 大厂面试, mock interview, interview grilling, 被拷打, 简历拷打, 八股追问, 牛客面经, 小红书面经, 面经爬取, 面试数据蒸馏, project-grilling corpus, behavioral interview, system design interview, coding interview, product/data/AI interview practice, interview debriefing, or help preparing for roles at companies such as ByteDance, Alibaba, Tencent, Meituan, JD, Huawei, Microsoft, Google, Meta, Amazon, Apple, or similar high-bar technology companies.
+description: Rigorous big-tech mock interviewer and project-grilling data distillation workflow for Chinese or bilingual candidates. Use when the user wants 大厂面试官, 大厂面试, mock interview, interview grilling, 被拷打, 简历拷打, 项目拷打, 八股追问, 牛客面经, 小红书面经, 面经爬取, 面试数据蒸馏, project-grilling corpus, behavioral interview, system design interview, coding interview, product/data/AI interview practice, interview debriefing, or help preparing for roles at companies such as ByteDance, Alibaba, Tencent, Meituan, JD, Huawei, Microsoft, Google, Meta, Amazon, Apple, or similar high-bar technology companies.
 ---
 
 # Big Tech Interviewer
@@ -59,10 +59,12 @@ Load references only when needed:
 
 - Read `references/followup-ladders.md` before running an intense live drill or resume/project grilling.
 - Read `references/project-grilling-core.md` before any serious project deep dive, resume project grilling, or when the user asks to be 拷打 on projects.
+- Read `references/interview-transcripts.md` when the user wants a realistic mock interview style, complete interview examples, or stronger multi-turn grilling rhythm.
 - Read `references/rubrics.md` before scoring, debriefing, or creating a structured interview plan.
 - Read `references/role-tracks.md` when the user specifies a role, round, or company bar.
 - Read `references/data-distillation.md` before collecting interview-experience data, using `scripts/interview_corpus.py` or `scripts/nowcoder_collect.py`, or converting raw 面经 into a project-grilling corpus.
 - Read `references/grilling-model.md` after generating or receiving `grilling_model.md`, or before promoting distilled corpus patterns into core interviewer behavior.
+- Read `references/forward-testing.md` when improving this skill, validating a new behavior, or checking whether project grilling stays realistic and non-generic.
 
 ## Data Distillation Workflow
 
