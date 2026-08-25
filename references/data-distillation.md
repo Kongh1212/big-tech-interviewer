@@ -58,6 +58,17 @@ python scripts/interview_corpus.py \
 - `project_grilling_bank.md`: grouped project-question bank for manual review and later skill distillation. It prioritizes real interview-experience evidence.
 - `grilling_model.md`: deterministic distilled model with source mix, source-quality mix, company/role/language clusters, dominant enterprise tags, and super-hard follow-up templates.
 
+To generate a large distilled training pack without publishing bulk source text:
+
+```bash
+python scripts/distill_training_pack.py \
+  --records data/interview-corpus/records.jsonl \
+  --out data/interview-corpus/distilled_training_pack.md \
+  --target-chars 100000
+```
+
+Use the generated pack as an intermediate distillation artifact. Promote only stable, cross-source interviewer moves into `references/project-grilling-core.md`.
+
 After generating `grilling_model.md`, read `references/grilling-model.md` to decide which patterns deserve promotion into the core interviewer behavior.
 
 ## Classification Axes
