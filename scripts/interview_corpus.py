@@ -128,6 +128,15 @@ NOISE_MARKERS = (
     "项目链接", "网盘", "面试官自己提取", "盆友", "单身：", "看完",
 )
 TEXTBOOK_PATTERNS = (r"是什么", r"有哪些", r"原理", r"区别", r"优缺点", r"适用场景")
+LOW_VALUE_TITLE_MARKERS = (
+    "高频", "汇总", "八股", "参考答案", "题库", "画重点", "背诵", "大全", "合集", "整理分享",
+    "真题汇总", "简历分享", "包装简历", "专栏", "应该怎么背", "攻略", "直通车", "总结",
+)
+FORCE_COMPILATION_TITLE_MARKERS = ("合集", "全攻略", "直通车", "题汇总", "八股文", "参考答案", "题库")
+INTERVIEW_TITLE_MARKERS = (
+    "面经", "一面", "二面", "三面", "四面", "hr面", "oc", "offer", "面试经验", "社招", "校招",
+    "实习", "提前批", "暑期", "秋招", "春招",
+)
 
 DRILL_TEMPLATES = {
     "high_concurrency": "如果峰值流量突然扩大 10 倍，你这个项目最先崩在哪里？怎么压测、限流、扩容、回退？",
@@ -184,6 +193,7 @@ class Extractor(HTMLParser):
 
 @dataclass
 class Classification:
+    source_quality: str = "low_signal"
     companies: list[str] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
     roles: list[str] = field(default_factory=list)
@@ -300,6 +310,22 @@ def is_textbook_question(q: str) -> bool:
     return not strong_project and any(re.search(p, q) for p in TEXTBOOK_PATTERNS)
 
 
+def classify_source_quality(title: str, text: str) -> str:
+    title_low = title.lower()
+    blob = f"{title}\n{text[:2000]}".lower()
+    if any(mark.lower() in title_low for mark in FORCE_COMPILATION_TITLE_MARKERS):
+        return "question_compilation"
+    low_value = any(mark.lower() in title_low for mark in LOW_VALUE_TITLE_MARKERS)
+    concrete_round = any(mark.lower() in title_low for mark in ("一面", "二面", "三面", "四面", "hr面", "社招", "已oc", "已意向", "凉经"))
+    interview_like = any(mark.lower() in title_low for mark in INTERVIEW_TITLE_MARKERS)
+    interviewer_trace = ("面试官" in blob and any(mark in blob for mark in ("问", "追问", "项目", "反问")))
+    if low_value and not concrete_round:
+        return "question_compilation"
+    if interview_like or interviewer_trace:
+        return "interview_experience"
+    return "low_signal"
+
+
 def extract_projects(blob: str, hint: str = "") -> list[str]:
     found = []
     for pattern in [r"项目(?:是|为|叫|：|:)\s*([^，。；;\n]{2,24})", r"做过([^，。；;\n]{2,24})项目"]:
@@ -329,11 +355,15 @@ def classify(title: str, text: str, qs: list[str], pqs: list[str], hints: dict[s
     blob = f"{title}\n{text}"
     title_blob = title
     low = blob.lower()
+    quality = classify_source_quality(title, text)
     tags = [tag for tag, words in ENTERPRISE.items() if any(w.lower() in low for w in words.split())]
     score = sum(len(re.findall(p, "\n".join(pqs) or blob, flags=re.I)) for p in SUPER_PATTERNS) + min(len(tags), 6)
     if any("项目" in q and ("如果" in q or "线上" in q or "故障" in q) for q in pqs):
         score += 3
+    if quality != "interview_experience":
+        score = min(score, 3)
     return Classification(
+        source_quality=quality,
         companies=merge_hint(hints.get("company", ""), match_aliases(title_blob, ALIASES["companies"]) or match_aliases(blob[:1200], ALIASES["companies"])),
         languages=merge_hint(hints.get("language", ""), match_aliases(title_blob, ALIASES["languages"]) or match_aliases(blob[:1200], ALIASES["languages"])),
         roles=merge_hint(hints.get("role", ""), match_aliases(title_blob, ALIASES["roles"]) or match_aliases(blob[:1200], ALIASES["roles"])),
@@ -342,7 +372,7 @@ def classify(title: str, text: str, qs: list[str], pqs: list[str], hints: dict[s
         enterprise_tags=tags,
         project_question_count=len(pqs),
         super_hard_score=score,
-        difficulty="super_hard" if score >= 8 or len(pqs) >= 8 else "hard" if score >= 4 or len(pqs) >= 4 else "normal",
+        difficulty="super_hard" if quality == "interview_experience" and (score >= 8 or len(pqs) >= 8) else "hard" if quality == "interview_experience" and (score >= 4 or len(pqs) >= 4) else "normal",
     )
 
 
@@ -433,7 +463,7 @@ def build_records(raw_rows: list[dict], save_full_text: bool) -> list[dict]:
 
 def write_outputs(records: list[dict], out: Path) -> None:
     (out / "records.jsonl").write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
-    fields = "source difficulty super_hard_score company role language round projects enterprise_tags project_question_count title url".split()
+    fields = "source source_quality difficulty super_hard_score company role language round projects enterprise_tags project_question_count title url".split()
     with (out / "summary.csv").open("w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fields)
         writer.writeheader()
@@ -441,6 +471,7 @@ def write_outputs(records: list[dict], out: Path) -> None:
             c = r["classification"]
             writer.writerow({
                 "source": r["source"],
+                "source_quality": c["source_quality"],
                 "difficulty": c["difficulty"],
                 "super_hard_score": c["super_hard_score"],
                 "company": "|".join(c["companies"]),
@@ -459,7 +490,8 @@ def write_outputs(records: list[dict], out: Path) -> None:
 
 def write_bank(records: list[dict], path: Path) -> None:
     lines = ["# Project-Grilling Bank", "", "Keep source URLs. Distill patterns before publishing.", ""]
-    for r in sorted(records, key=lambda x: x["classification"]["super_hard_score"], reverse=True):
+    evidence = [r for r in records if r["classification"]["source_quality"] == "interview_experience"]
+    for r in sorted(evidence, key=lambda x: x["classification"]["super_hard_score"], reverse=True):
         if not r["project_questions"]:
             continue
         c = r["classification"]
@@ -476,10 +508,12 @@ def write_bank(records: list[dict], path: Path) -> None:
 
 def write_model(records: list[dict], path: Path) -> None:
     source_counts = Counter(r["source"] for r in records)
-    tag_counts = Counter(t for r in records for t in r["classification"]["enterprise_tags"])
+    quality_counts = Counter(r["classification"]["source_quality"] for r in records)
+    evidence = [r for r in records if r["classification"]["source_quality"] == "interview_experience"] or records
+    tag_counts = Counter(t for r in evidence for t in r["classification"]["enterprise_tags"])
     group_tags: dict[tuple[str, str, str], Counter] = defaultdict(Counter)
     group_examples: dict[tuple[str, str, str], list[str]] = defaultdict(list)
-    for r in records:
+    for r in evidence:
         c = r["classification"]
         companies = c["companies"] or ["Unknown Company"]
         roles = c["roles"] or ["Unknown Role"]
@@ -490,7 +524,9 @@ def write_model(records: list[dict], path: Path) -> None:
 
     lines = ["# Grilling Model", "", "## Corpus Summary", ""]
     lines += [f"- Records: {len(records)}"]
+    lines += [f"- Evidence records: {len(evidence)}"]
     lines += [f"- Sources: {', '.join(f'{k}={v}' for k, v in source_counts.items()) or 'none'}"]
+    lines += [f"- Source quality: {', '.join(f'{k}={v}' for k, v in quality_counts.items()) or 'none'}"]
     lines += [f"- Top enterprise tags: {', '.join(f'{k}={v}' for k, v in tag_counts.most_common(12)) or 'none'}", ""]
     lines += ["## Company / Role / Language Clusters", ""]
     for key, counts in sorted(group_tags.items(), key=lambda kv: sum(kv[1].values()), reverse=True)[:30]:
