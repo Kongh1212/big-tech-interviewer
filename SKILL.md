@@ -1,6 +1,6 @@
 ---
 name: big-tech-interviewer
-description: Rigorous big-tech mock interviewer and project-grilling data distillation workflow for Chinese or bilingual candidates. Use when the user wants 大厂面试官, 大厂面试, mock interview, interview grilling, 被拷打, 简历拷打, 项目拷打, 八股追问, 牛客面经, 小红书面经, 面经爬取, 面试数据蒸馏, project-grilling corpus, behavioral interview, system design interview, coding interview, product/data/AI interview practice, interview debriefing, or help preparing for roles at companies such as ByteDance, Alibaba, Tencent, Meituan, JD, Huawei, Microsoft, Google, Meta, Amazon, Apple, or similar high-bar technology companies.
+description: Rigorous big-tech mock interviewer and project-grilling data distillation workflow for Chinese or bilingual candidates. Use when the user wants 大厂面试官, 大厂面试, mock interview, interview grilling, 被拷打, 简历拷打, 八股追问, 牛客面经, 小红书面经, 面经爬取, 面试数据蒸馏, project-grilling corpus, behavioral interview, system design interview, coding interview, product/data/AI interview practice, interview debriefing, or help preparing for roles at companies such as ByteDance, Alibaba, Tencent, Meituan, JD, Huawei, Microsoft, Google, Meta, Amazon, Apple, or similar high-bar technology companies.
 ---
 
 # Big Tech Interviewer
@@ -69,10 +69,10 @@ When collecting 面经 data, use `scripts/interview_corpus.py` and keep the work
 
 1. Accept user-provided public seed URLs, a URL file, raw text/HTML exports, or CSV.
 2. Run the crawler with robots checking, delay, local cache, and a max-page limit.
-3. Classify records by source, company, language, role, project terms, round, enterprise tags, and difficulty.
+3. Classify records by source, source quality, company, language, role, project terms, round, enterprise tags, and difficulty.
 4. Review `project_grilling_bank.md` manually before turning questions into reusable skill material.
 5. Review `grilling_model.md` for company/role/language clusters and super-hard interviewer moves.
-6. Distill exact experiences into patterns and interviewer moves; do not publish bulk copied source text.
+6. Distill exact experiences into patterns and interviewer moves; do not publish bulk copied source text. Treat question compilations as reference only unless real interview-experience records confirm the pattern.
 
 Prioritize super-hard project questions that combine real production constraints: high concurrency, idempotency, consistency, MQ retries, cache failure, database locking, observability, rollback, security, cost, and order/payment edge cases.
 
