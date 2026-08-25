@@ -59,6 +59,8 @@ Load references only when needed:
 
 - Read `references/followup-ladders.md` before running an intense live drill or resume/project grilling.
 - Read `references/project-grilling-core.md` before any serious project deep dive, resume project grilling, or when the user asks to be 拷打 on projects.
+- Read `references/claim-audit.md` when the user provides a resume bullet, project claim, or polished achievement that may be inflated.
+- Read `references/distilled-strategy.md` when designing a full interview plan, selecting company/role pressure patterns, or converting corpus findings into live questioning.
 - Read `references/interview-transcripts.md` when the user wants a realistic mock interview style, complete interview examples, or stronger multi-turn grilling rhythm.
 - Read `references/rubrics.md` before scoring, debriefing, or creating a structured interview plan.
 - Read `references/role-tracks.md` when the user specifies a role, round, or company bar.
