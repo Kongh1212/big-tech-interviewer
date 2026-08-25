@@ -54,9 +54,9 @@ python scripts/interview_corpus.py \
 ## Outputs
 
 - `records.jsonl`: one JSON object per page, including title, URL, excerpts, extracted questions, project questions, and classification.
-- `summary.csv`: sortable table with source, company, role, language, project terms, round, enterprise tags, project question count, and difficulty.
-- `project_grilling_bank.md`: grouped project-question bank for manual review and later skill distillation.
-- `grilling_model.md`: deterministic distilled model with source mix, company/role/language clusters, dominant enterprise tags, and super-hard follow-up templates.
+- `summary.csv`: sortable table with source, source quality, company, role, language, project terms, round, enterprise tags, project question count, and difficulty.
+- `project_grilling_bank.md`: grouped project-question bank for manual review and later skill distillation. It prioritizes real interview-experience evidence.
+- `grilling_model.md`: deterministic distilled model with source mix, source-quality mix, company/role/language clusters, dominant enterprise tags, and super-hard follow-up templates.
 
 After generating `grilling_model.md`, read `references/grilling-model.md` to decide which patterns deserve promotion into the core interviewer behavior.
 
@@ -70,6 +70,9 @@ After generating `grilling_model.md`, read `references/grilling-model.md` to dec
 - Round: first, second, third, HR, cross/extra round.
 - Enterprise tags: high concurrency, consistency, idempotency, MQ, cache, database, availability, observability, release, security, cost, order/payment.
 - Difficulty: normal, hard, super_hard.
+- Source quality: `interview_experience` for concrete 面经, `question_compilation` for 八股/题库/合集/攻略, and `low_signal` for weak evidence.
+
+Use `question_compilation` records as background reference only. Do not promote them into core interviewer behavior unless the same pattern also appears in real `interview_experience` records.
 
 ## Super-Hard Project Signal
 
